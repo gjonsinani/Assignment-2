@@ -13,15 +13,27 @@ class PostController extends Controller
         return Post::all();
     }
 
+    public function myPosts(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $posts = Post::where('user_id', $user_id)->orderBy('created_at', 'DESC')->get();
+        return response()->json([
+            'posts' => $posts
+        ]);
+
+    }
+
     public function store(Request $request)
     {
         try {
             $post = new Post();
+            $post->user_id = $request->user()->id;
             $post->title = $request->title;
             $post->body = $request->body;
 
             if ($post->save()) {
-                return response()->json(['status' => 'success', 'message' => 'Post created successfully!']);
+                $response = $post;
+                return response()->json(['status' => 'success', 'message' => 'Post created successfully!', 'data' => $response]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
